@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bot Training & Maintenance Guide — WhatsApp AI Bot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-page:        #0c0e12;
+      --bg-card:        #15181e;
+      --bg-secondary:   #23272f;
+      --bg-muted:       #1f2229;
+      --text-primary:   #e7ebef;
+      --text-muted:     #7b899d;
+      --teal:           #19e6d4;
+      --purple:         #8d52e0;
+      --green:          #26d971;
+      --orange:         #f97316;
+      --red:            #ef4444;
+      --border:         #272c35;
+      --gradient-primary: linear-gradient(135deg, #19e6d4, #8d52e0);
+      --gradient-card:    linear-gradient(145deg, #16191f, #111317);
+      --glow-soft:   0 0 20px rgba(25, 230, 212, 0.15);
+      --glow-strong: 0 0 40px rgba(25, 230, 212, 0.25);
+      --font: 'Space Grotesk', sans-serif;
+      --radius-card: 0.75rem;
+      --radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-family: var(--font);
+      line-height: 1.7;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(12,14,18,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    nav .nav-label { font-size:0.8rem; font-weight:500; color:var(--teal); letter-spacing:0.15em; text-transform:uppercase; }
+    nav .nav-links { display:flex; gap:1.5rem; list-style:none; flex-wrap:wrap; }
+    nav .nav-links a { color:var(--text-muted); text-decoration:none; font-size:0.8rem; font-weight:500; transition:color 0.2s; }
+    nav .nav-links a:hover { color:var(--teal); }
+
+    /* HERO */
+    .hero { max-width:860px; margin:0 auto; padding:80px 2rem 60px; border-bottom:1px solid var(--border); }
+    .session-badge { display:inline-block; font-size:0.75rem; font-weight:500; color:var(--purple); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:1.25rem; }
+    .hero h1 { font-size:clamp(2rem,5vw,3rem); font-weight:700; line-height:1.15; margin-bottom:1rem; }
+    .hero h1 span { background:var(--gradient-primary); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .hero .subtitle { font-size:1.05rem; color:var(--text-muted); margin-bottom:2rem; max-width:620px; }
+    .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; }
+    .meta-item { display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:var(--text-muted); }
+    .meta-item .dot { width:6px; height:6px; border-radius:50%; background:var(--purple); }
+
+    /* CONTENT */
+    .content { max-width:860px; margin:0 auto; padding:0 2rem; }
+
+    /* SECTION */
+    .section { padding:3.5rem 0; border-bottom:1px solid var(--border); }
+    .section-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; }
+    .section-badge {
+      font-size:0.7rem; font-weight:600; color:var(--bg-page);
+      background:var(--teal); padding:0.2rem 0.7rem;
+      border-radius:var(--radius-pill); text-transform:uppercase; letter-spacing:0.1em; white-space:nowrap;
+    }
+    .section-badge.purple { background:var(--purple); color:#fff; }
+    .section-badge.green  { background:var(--green); color:var(--bg-page); }
+    .section-badge.orange { background:var(--orange); color:#fff; }
+    .section-badge.red    { background:var(--red); color:#fff; }
+    .section-badge.muted  { background:var(--bg-secondary); color:var(--text-muted); }
+    .section-time { font-size:0.8rem; color:var(--text-muted); margin-left:auto; }
+    .section h2 { font-size:1.5rem; font-weight:700; margin-bottom:0.5rem; }
+    .section .section-desc { color:var(--text-muted); font-size:0.95rem; margin-bottom:1.75rem; }
+
+    /* STEPS */
+    .steps { display:flex; flex-direction:column; gap:1.5rem; }
+    .step { display:flex; gap:1.25rem; }
+    .step-num {
+      flex-shrink:0; width:2rem; height:2rem; border-radius:50%;
+      background:var(--bg-secondary); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.8rem; font-weight:700; color:var(--teal); margin-top:0.1rem;
+    }
+    .step-body { flex:1; }
+    .step-body p { font-size:0.95rem; margin-bottom:0.5rem; }
+
+    /* CODE */
+    .code-block {
+      background:#0a0c0f; border:1px solid var(--border); border-radius:0.5rem;
+      padding:1rem 1.25rem; font-family:'Courier New',monospace;
+      font-size:0.85rem; color:var(--teal); overflow-x:auto; margin:0.75rem 0;
+    }
+    .code-block .code-label {
+      font-family:var(--font); font-size:0.7rem; color:var(--text-muted);
+      text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.5rem; display:block;
+    }
+    .code-block.comment { color:var(--text-muted); }
+    .code-block .hl { color:var(--teal); }
+    .code-block .dim { color:#4a5568; }
+    .code-block .val { color:var(--green); }
+    .code-block .key { color:var(--purple); }
+
+    /* ALERTS */
+    .alert { display:flex; gap:0.75rem; padding:1rem 1.25rem; border-radius:0.5rem; margin:1rem 0; font-size:0.9rem; }
+    .alert.tip    { background:rgba(25,230,212,0.06);  border:1px solid rgba(25,230,212,0.2); }
+    .alert.warn   { background:rgba(249,115,22,0.06);  border:1px solid rgba(249,115,22,0.2); color:var(--text-primary); }
+    .alert.danger { background:rgba(239,68,68,0.06);   border:1px solid rgba(239,68,68,0.2);  color:var(--text-primary); }
+    .alert.purple { background:rgba(141,82,224,0.08);  border:1px solid rgba(141,82,224,0.25); color:var(--text-primary); }
+    .alert-icon { font-size:1rem; flex-shrink:0; margin-top:0.1rem; }
+    .alert-body strong { display:block; margin-bottom:0.25rem; color:var(--text-primary); }
+
+    /* CARDS */
+    .card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; margin-top:1.25rem; }
+    .card {
+      background:var(--gradient-card); border:1px solid var(--border);
+      border-radius:var(--radius-card); padding:1.25rem; transition:box-shadow 0.2s;
+    }
+    .card:hover { box-shadow:var(--glow-strong); }
+    .card .card-icon { font-size:1.5rem; margin-bottom:0.75rem; }
+    .card h4 { font-size:0.95rem; font-weight:700; margin-bottom:0.35rem; }
+    .card p { font-size:0.8rem; color:var(--text-muted); }
+    .card .card-tag {
+      display:inline-block; margin-top:0.75rem;
+      background:var(--bg-secondary); color:var(--teal);
+      border-radius:var(--radius-pill); padding:0.2rem 0.65rem; font-size:0.7rem; font-weight:600;
+    }
+
+    /* PERSONA EXAMPLE BLOCKS */
+    .persona-block {
+      background:#0a0c0f; border:1px solid var(--border); border-radius:var(--radius-card);
+      margin:1rem 0; overflow:hidden;
+    }
+    .persona-block-header {
+      background:var(--bg-secondary); padding:0.6rem 1rem;
+      display:flex; align-items:center; justify-content:space-between;
+      font-size:0.75rem; color:var(--text-muted); font-weight:600; letter-spacing:0.05em;
+    }
+    .persona-block-header span { color:var(--teal); }
+    .persona-block-body { padding:1rem 1.25rem; font-size:0.875rem; line-height:1.8; color:var(--text-primary); }
+    .persona-block-body .line-comment { color:#4a5568; font-style:italic; }
+    .persona-block-body .line-rule { color:var(--teal); }
+    .persona-block-body .line-example { color:var(--green); }
+
+    /* LIMITS TABLE */
+    .limits-table { width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.875rem; }
+    .limits-table th {
+      text-align:left; padding:0.6rem 1rem;
+      background:var(--bg-secondary); color:var(--text-muted);
+      font-weight:500; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em;
+    }
+    .limits-table td { padding:0.85rem 1rem; border-bottom:1px solid var(--border); vertical-align:top; }
+    .limits-table td:first-child { color:var(--text-primary); font-weight:600; width:30%; }
+    .limits-table td:nth-child(2) { color:var(--red); font-size:0.85rem; width:35%; }
+    .limits-table td:last-child { color:var(--teal); font-size:0.85rem; }
+
+    /* DIVIDER */
+    .divider { height:1px; background:var(--border); margin:1.75rem 0; }
+
+    /* CONCEPTS */
+    .concepts { display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem; }
+    .concept-item {
+      display:flex; align-items:flex-start; gap:0.75rem;
+      padding:0.75rem 1rem; background:var(--gradient-card);
+      border:1px solid var(--border); border-radius:0.5rem; font-size:0.9rem;
+    }
+    .concept-item::before { content:"◆"; color:var(--teal); font-size:0.6rem; flex-shrink:0; margin-top:0.35rem; }
+
+    /* GO FURTHER */
+    .go-further {
+      margin-top:1.5rem; padding:1rem 1.25rem;
+      background:rgba(25,230,212,0.04); border:1px dashed rgba(25,230,212,0.2);
+      border-radius:0.5rem; font-size:0.875rem; color:var(--text-muted);
+    }
+    .go-further strong { color:var(--teal); display:block; margin-bottom:0.25rem; }
+
+    /* OVERRIDE TABLE */
+    .override-table { width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.85rem; }
+    .override-table th {
+      text-align:left; padding:0.6rem 1rem;
+      background:var(--bg-secondary); color:var(--text-muted);
+      font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em;
+    }
+    .override-table td { padding:0.85rem 1rem; border-bottom:1px solid var(--border); vertical-align:top; }
+    .override-table td:first-child { color:var(--purple); font-weight:600; width:30%; }
+    .override-table td:nth-child(2) { color:var(--text-muted); width:40%; }
+    .override-table td:last-child { color:var(--teal); font-family:'Courier New',monospace; font-size:0.8rem; }
+
+    /* TAGS */
+    .tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem; }
+    .tag { background:var(--bg-secondary); color:var(--text-muted); border-radius:var(--radius-pill); padding:0.25rem 0.75rem; font-size:0.75rem; }
+
+    /* COMPLETE */
+    .complete-badge {
+      display:inline-flex; align-items:center; gap:0.5rem; margin-top:2rem;
+      background:var(--bg-secondary); border:1px solid var(--border);
+      border-radius:var(--radius-pill); padding:0.4rem 1rem;
+      font-size:0.8rem; color:var(--teal); font-weight:600;
+    }
+
+    footer { max-width:860px; margin:0 auto; padding:3rem 2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+    footer p { font-size:0.8rem; color:var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-label">Bot Training Guide</span>
+  <ul class="nav-links">
+    <li><a href="#how-it-thinks">How It Thinks</a></li>
+    <li><a href="#training">Training</a></li>
+    <li><a href="#overrides">Override Rules</a></li>
+    <li><a href="#limitations">Limitations</a></li>
+    <li><a href="#monitoring">Monitoring</a></li>
+    <li><a href="#deploying">Deploying Updates</a></li>
+    <li><a href="#expanding">Expanding</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="session-badge">Operations Guide · WhatsApp AI Bot</span>
+  <h1>Training, Improving &<br /><span>Controlling Your Bot</span></h1>
+  <p class="subtitle">How to make the bot sound more like you over time, override its behavior for specific situations, understand what it can't do, and push updates without breaking anything.</p>
+  <div class="hero-meta">
+    <div class="meta-item"><span class="dot"></span> Ongoing reference</div>
+    <div class="meta-item"><span class="dot"></span> 7 sections</div>
+    <div class="meta-item"><span class="dot"></span> No coding required for most updates</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- SECTION 1: HOW IT THINKS -->
+  <div class="section" id="how-it-thinks">
+    <div class="section-header">
+      <span class="section-badge muted">UNDERSTAND</span>
+      <span class="section-time">Read first</span>
+    </div>
+    <h2>How the Bot Thinks</h2>
+    <p class="section-desc">Before you train or override anything, understand exactly what the bot sees and how it decides what to say.</p>
+
+    <p style="font-size:0.95rem; margin-bottom:1.5rem;">Every single reply goes through this exact process:</p>
+
+    <div class="concepts">
+      <div class="concept-item"><strong style="color:var(--teal); margin-right:0.5rem;">1. Incoming message received</strong> — Bot reads the sender's name and message text</div>
+      <div class="concept-item"><strong style="color:var(--teal); margin-right:0.5rem;">2. Conversation history loaded</strong> — Last 10 messages (configurable) from that chat are added as context</div>
+      <div class="concept-item"><strong style="color:var(--teal); margin-right:0.5rem;">3. persona.txt loaded as system prompt</strong> — This is the bot's entire personality, rules, and knowledge</div>
+      <div class="concept-item"><strong style="color:var(--teal); margin-right:0.5rem;">4. Everything sent to Groq</strong> — persona + history + new message → Groq generates a reply</div>
+      <div class="concept-item"><strong style="color:var(--teal); margin-right:0.5rem;">5. Reply sent after human delay</strong> — 3–8 seconds wait, then the reply lands in WhatsApp</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">The key insight</p>
+    <div class="alert purple">
+      <span class="alert-icon">🧠</span>
+      <div class="alert-body">
+        <strong>persona.txt is the brain. Everything else is plumbing.</strong>
+        The bot has no memory between sessions, no access to the internet, and no knowledge of your real life. All it knows is what's in persona.txt and the last few messages of the current conversation. This means: to change how the bot behaves, you edit persona.txt. That's it. No coding needed.
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">What persona.txt contains</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <h4>Your Personality</h4>
+        <p>Tone, energy, warmth level, humor style — how you come across in conversation</p>
+        <span class="card-tag">auto-generated</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h4>Your Vocabulary</h4>
+        <p>Specific words, slang, expressions you use — "Na wa oo", "Eiii", "Hello ma"</p>
+        <span class="card-tag">auto-generated</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <h4>Writing Patterns</h4>
+        <p>Sentence length, punctuation habits, emoji frequency, how you open and close messages</p>
+        <span class="card-tag">auto-generated</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h4>Operational Rules</h4>
+        <p>Never reveal it's a bot. Flag sensitive messages. Match reply length to incoming message.</p>
+        <span class="card-tag">hardcoded</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">✍️</div>
+        <h4>Anti-AI Rules</h4>
+        <p>Banned words and phrases that make text sound AI-generated — stripped from every reply</p>
+        <span class="card-tag">hardcoded</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔧</div>
+        <h4>Your Custom Rules</h4>
+        <p>Anything you manually add — specific contacts, topics to avoid, situations to handle differently</p>
+        <span class="card-tag">you add these</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: TRAINING -->
+  <div class="section" id="training">
+    <div class="section-header">
+      <span class="section-badge">TRAINING</span>
+      <span class="section-time">Ongoing</span>
+    </div>
+    <h2>Training the Bot to Sound More Like You</h2>
+    <p class="section-desc">Two ways to train: re-generate from more chats, or manually edit persona.txt directly.</p>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1.25rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">Method 1 — Re-generate from more chat exports</p>
+
+    <p style="font-size:0.95rem; margin-bottom:1rem;">The more messages you feed the parser, the richer and more accurate the persona becomes. Do this whenever the bot sounds too generic or misses your style.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p>Export more WhatsApp chats from your phone (3-dot menu → More → Export chat → Without Media). Focus on chats where <strong>you write the most</strong> — long conversations with friends, colleagues, family.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p>Add the new .txt files to your <code style="color:var(--teal);">chats/</code> folder.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <p>Re-run the parser and persona generator:</p>
+          <div class="code-block"><span class="code-label">terminal — from project folder</span>node parse-chats.js<br/>node generate-persona.js</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <p>Open <code style="color:var(--teal);">persona.txt</code> and <strong>read it carefully</strong>. Compare it to the previous version. Add back any custom rules you had manually written before — the regeneration overwrites the file.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <p>Deploy the update:</p>
+          <div class="code-block"><span class="code-label">terminal</span>git add .<br/>git commit -m "Improved persona — added more chats"<br/>git push</div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.4rem;">Railway redeploys automatically within 1–2 minutes.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1.25rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">Method 2 — Manually edit persona.txt</p>
+
+    <p style="font-size:0.95rem; margin-bottom:1rem;">For precise, targeted improvements. Open <code style="color:var(--teal);">persona.txt</code> in Notepad and add your rules directly. This is the fastest way to fix a specific behavior you don't like.</p>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:0.75rem;">The persona file has this structure:</p>
+
+    <div class="persona-block">
+      <div class="persona-block-header">persona.txt <span>structure</span></div>
+      <div class="persona-block-body">
+        <span class="line-comment">--- SECTION 1: AUTO-GENERATED PERSONALITY ---</span><br/>
+        You are line upon line, a warm and casual individual...<br/>
+        Your vocabulary includes "Na wa oo", "Eiii", "Hello ma"...<br/>
+        <br/>
+        <span class="line-comment">--- SECTION 2: OPERATIONAL RULES (hardcoded) ---</span><br/>
+        <span class="line-rule">- Never reveal you are an AI or a bot.</span><br/>
+        <span class="line-rule">- Flag sensitive messages with ⚠️ HUMAN REVIEW NEEDED</span><br/>
+        <span class="line-rule">- Match reply length to incoming message.</span><br/>
+        <br/>
+        <span class="line-comment">--- SECTION 3: ANTI-AI RULES (hardcoded) ---</span><br/>
+        <span class="line-rule">- Never use: delve, tapestry, pivotal, leverage...</span><br/>
+        <span class="line-rule">- Use contractions (it's, don't, can't)</span><br/>
+        <br/>
+        <span class="line-comment">--- SECTION 4: YOUR CUSTOM RULES (you add these at the bottom) ---</span><br/>
+        <span class="line-example">↓ Add your rules here ↓</span>
+      </div>
+    </div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:0.75rem; margin-top:1.25rem;"><strong style="color:var(--text-primary);">Always add your custom rules at the very bottom of persona.txt.</strong> This way they survive a re-generation (you can copy them back in).</p>
+
+    <div class="alert tip">
+      <span class="alert-icon">💡</span>
+      <div class="alert-body">
+        <strong>What makes a good training rule?</strong>
+        Be specific and concrete. "Be nicer" is vague and useless. "When someone shares bad news, respond with empathy before anything else — no jokes, no advice unless asked" is specific and actionable. The AI follows concrete instructions far better than abstract ones.
+      </div>
+    </div>
+
+    <div class="go-further">
+      <strong>→ Best chats to export for training</strong>
+      Long threads with close friends (casual register), work chats (professional register), group chats where you take the lead, debates or arguments where your opinion shows, and any chat with 100+ messages you personally sent. Diversity of context = more complete persona.
+    </div>
+  </div>
+
+  <!-- SECTION 3: OVERRIDES -->
+  <div class="section" id="overrides">
+    <div class="section-header">
+      <span class="section-badge purple">OVERRIDES</span>
+      <span class="section-time">As needed</span>
+    </div>
+    <h2>Override Rules — Controlling Specific Behavior</h2>
+    <p class="section-desc">How to make the bot handle specific situations, contacts, and topics exactly the way you want.</p>
+
+    <p style="font-size:0.95rem; margin-bottom:1.5rem;">Override rules are lines you write at the bottom of persona.txt that tell the bot exactly how to handle specific scenarios. They override the default auto-generated behavior. The more specific your rule, the more reliably the bot follows it.</p>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">Override rule templates — copy & customize</p>
+
+    <div class="persona-block">
+      <div class="persona-block-header">Contact-specific rules <span>add to bottom of persona.txt</span></div>
+      <div class="persona-block-body">
+        <span class="line-comment">--- CONTACT RULES ---</span><br/>
+        <span class="line-rule">When someone says they are my mum, my dad, or any parent figure, reply with extra respect and warmth. Always use proper greeting, never use slang.</span><br/><br/>
+        <span class="line-rule">When someone introduces themselves as a client or asks about pricing, reply briefly and professionally, then add ⚠️ HUMAN REVIEW NEEDED at the end — Samuel handles business conversations personally.</span><br/><br/>
+        <span class="line-rule">When someone from church (mentions church, service, brethren, Elder, Sister, Bishop, stake) reply in a spiritually warm tone. Match the level of formality they use.</span>
+      </div>
+    </div>
+
+    <div class="persona-block" style="margin-top:1rem;">
+      <div class="persona-block-header">Topic-specific rules <span>add to bottom of persona.txt</span></div>
+      <div class="persona-block-body">
+        <span class="line-comment">--- TOPIC RULES ---</span><br/>
+        <span class="line-rule">When someone asks for money, a loan, financial help, or asks you to send anything — decline warmly and naturally without over-explaining. Do not apologize excessively.</span><br/><br/>
+        <span class="line-rule">When someone asks about your schedule, availability, or whether you can meet — say you'll confirm soon and that you'll get back to them. Add ⚠️ HUMAN REVIEW NEEDED.</span><br/><br/>
+        <span class="line-rule">When someone asks a question you genuinely don't know the answer to — say something like "I'd have to check on that" or "Not sure off the top of my head" — never make up facts.</span><br/><br/>
+        <span class="line-rule">Never discuss politics, tribal issues, or gossip about other people. Change the subject naturally if these come up.</span>
+      </div>
+    </div>
+
+    <div class="persona-block" style="margin-top:1rem;">
+      <div class="persona-block-header">Conversation-state rules <span>add to bottom of persona.txt</span></div>
+      <div class="persona-block-body">
+        <span class="line-comment">--- CONVERSATION STATE RULES ---</span><br/>
+        <span class="line-rule">If someone says "stop" or "please stop replying" or "I know it's a bot" — acknowledge it naturally and stop engaging. Do not deny being a bot if they are clearly certain.</span><br/><br/>
+        <span class="line-rule">If someone is clearly angry or upset at Samuel — respond with calm empathy. Do not match their energy. Acknowledge their feeling before anything else.</span><br/><br/>
+        <span class="line-rule">If someone sends more than 3 messages in a row without getting a reply, pick the most important one and respond to that. Don't try to address all of them.</span><br/><br/>
+        <span class="line-rule">In group chats — only reply if the message is directly addressed to Samuel by name. Ignore general group discussions.</span>
+      </div>
+    </div>
+
+    <div class="persona-block" style="margin-top:1rem;">
+      <div class="persona-block-header">Emergency & sensitive rules <span>add to bottom of persona.txt</span></div>
+      <div class="persona-block-body">
+        <span class="line-comment">--- SENSITIVE / EMERGENCY RULES ---</span><br/>
+        <span class="line-rule">If someone mentions an accident, death, hospital, or urgent medical situation — reply with immediate empathy and concern, keep it brief and warm, then add ⚠️ HUMAN REVIEW NEEDED.</span><br/><br/>
+        <span class="line-rule">If someone mentions they are in danger, scared, or crying — reply with empathy and a gentle check-in. Do not give advice. Add ⚠️ HUMAN REVIEW NEEDED.</span><br/><br/>
+        <span class="line-rule">If someone asks Samuel to do something that requires physical presence (come over, pick something up, sign a document) — say you'll sort it out soon. Add ⚠️ HUMAN REVIEW NEEDED.</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">Quick override reference</p>
+    <table class="override-table">
+      <tr><th>Situation</th><th>What you want</th><th>Rule pattern</th></tr>
+      <tr>
+        <td>Specific contact</td>
+        <td>Different tone or behavior for one person</td>
+        <td>When [contact name] messages, always...</td>
+      </tr>
+      <tr>
+        <td>Specific keyword</td>
+        <td>Trigger a certain response when topic comes up</td>
+        <td>When someone mentions [topic], respond by...</td>
+      </tr>
+      <tr>
+        <td>Flag for review</td>
+        <td>Any message that needs your personal attention</td>
+        <td>...then add ⚠️ HUMAN REVIEW NEEDED at the end</td>
+      </tr>
+      <tr>
+        <td>Hard block</td>
+        <td>Bot should never do something</td>
+        <td>Never [action] under any circumstances.</td>
+      </tr>
+      <tr>
+        <td>Default fallback</td>
+        <td>When bot doesn't know what to say</td>
+        <td>If unsure how to respond, say... and add ⚠️ HUMAN REVIEW NEEDED</td>
+      </tr>
+      <tr>
+        <td>Tone shift</td>
+        <td>Be more formal or more casual in a context</td>
+        <td>When in [context], use [formal/casual] language. Avoid slang.</td>
+      </tr>
+    </table>
+
+    <div class="alert warn" style="margin-top:1.5rem;">
+      <span class="alert-icon">⚠️</span>
+      <div class="alert-body">
+        <strong>Rule conflicts</strong>
+        Rules at the bottom of persona.txt have higher priority than rules higher up. If you want to override something from the auto-generated section, add your rule at the very end of the file — it will take precedence.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: LIMITATIONS -->
+  <div class="section" id="limitations">
+    <div class="section-header">
+      <span class="section-badge red">LIMITATIONS</span>
+      <span class="section-time">Know these</span>
+    </div>
+    <h2>What the Bot Can't Do</h2>
+    <p class="section-desc">Hard limitations, soft limitations, and workarounds where they exist.</p>
+
+    <table class="limits-table">
+      <tr><th>Limitation</th><th>What happens</th><th>Workaround</th></tr>
+      <tr>
+        <td>No real-life knowledge</td>
+        <td>It doesn't know your schedule, location, commitments, or what you've promised someone</td>
+        <td>Add rules like "When asked about schedule, say you'll confirm" + flag for review</td>
+      </tr>
+      <tr>
+        <td>Text only</td>
+        <td>Voice notes, images, videos, stickers get no reply</td>
+        <td>Add a rule: "If someone sends media without text, reply asking them to type it out"</td>
+      </tr>
+      <tr>
+        <td>No memory between restarts</td>
+        <td>If the bot restarts, it forgets all previous conversations</td>
+        <td>Keep CONTEXT_WINDOW at 10+ so it remembers within a session</td>
+      </tr>
+      <tr>
+        <td>No internet access</td>
+        <td>Can't look up current info, news, prices, Bible verses, etc.</td>
+        <td>Add persona rules for these topics ("When asked for Bible verse, choose from memory or deflect")</td>
+      </tr>
+      <tr>
+        <td>Can't make calls or initiate messages</td>
+        <td>Bot only replies — it never starts conversations or calls anyone</td>
+        <td>Not bypassed — this is a WhatsApp platform constraint</td>
+      </tr>
+      <tr>
+        <td>Can't verify identity</td>
+        <td>Doesn't know if the person claiming to be your mum actually is your mum</td>
+        <td>Add rules for family members; always flag for review when identity matters</td>
+      </tr>
+      <tr>
+        <td>Rate limits on Groq free tier</td>
+        <td>If too many messages come in at once, Groq may throttle replies</td>
+        <td>The bot retries on error; if persistent, upgrade to Groq paid or reduce CONTEXT_WINDOW</td>
+      </tr>
+      <tr>
+        <td>WhatsApp session expires</td>
+        <td>After a long time, WhatsApp may log out the linked device</td>
+        <td>Re-run bot locally (node index.js), scan QR, then push new .wa-session to GitHub</td>
+      </tr>
+      <tr>
+        <td>Runs on Railway free tier</td>
+        <td>Railway gives $5/month free credit. If the bot uses more, it will be suspended</td>
+        <td>Monitor Railway usage tab. For heavy use, upgrade to Hobby plan ($5/month flat)</td>
+      </tr>
+      <tr>
+        <td>Persona degrades over time</td>
+        <td>As your language evolves, the old persona may start feeling slightly off</td>
+        <td>Re-run generate-persona.js every 2–3 months with fresh chat exports</td>
+      </tr>
+    </table>
+
+    <div class="alert danger" style="margin-top:1.5rem;">
+      <span class="alert-icon">🚨</span>
+      <div class="alert-body">
+        <strong>Never fully trust the bot with high-stakes conversations</strong>
+        Business deals, financial requests, medical situations, emotional crises, and relationship conflicts should always involve you personally. Use the ⚠️ HUMAN REVIEW NEEDED flag liberally in your override rules for any of these topics.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: MONITORING -->
+  <div class="section" id="monitoring">
+    <div class="section-header">
+      <span class="section-badge orange">MONITORING</span>
+      <span class="section-time">Daily habit</span>
+    </div>
+    <h2>Reading the Log & Staying in Control</h2>
+    <p class="section-desc">How to know what the bot is doing, catch problems early, and step in when needed.</p>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1.25rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">Understanding bot.log</p>
+
+    <p style="font-size:0.95rem; margin-bottom:1rem;">Every message and reply is logged to <code style="color:var(--teal);">bot.log</code> in your project folder. On Railway, view it in the Deploy Logs tab.</p>
+
+    <div class="persona-block">
+      <div class="persona-block-header">bot.log <span>example entries</span></div>
+      <div class="persona-block-body">
+        <span class="line-comment">[2026-06-01T21:36:09] [INFO] Message from Sunbae🤍: "Hi"</span><br/>
+        <span class="line-rule">[2026-06-01T21:36:17] [INFO] Replied to Sunbae🤍: "Hello ma, how are you? 🙏"</span><br/><br/>
+        <span class="line-comment">[2026-06-01T21:40:12] [INFO] Skipped group message in Ikorodu Stake YSA</span><br/><br/>
+        <span style="color:var(--orange);">[2026-06-01T21:45:30] [WARN] ⚠️ HUMAN REVIEW NEEDED — Message from Emmanuel: "I need ₦20,000 urgently"</span><br/><br/>
+        <span style="color:var(--red);">[2026-06-01T22:10:05] [ERROR] Groq API error: rate limit exceeded</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">Log levels and what they mean</p>
+    <div class="concepts">
+      <div class="concept-item"><strong style="color:var(--teal); margin-right:0.5rem;">[INFO]</strong> Normal activity — messages received, replies sent, groups skipped. No action needed.</div>
+      <div class="concept-item"><strong style="color:var(--orange); margin-right:0.5rem;">[WARN]</strong> Something needs your attention — usually a ⚠️ HUMAN REVIEW NEEDED flag. Reply to that person personally.</div>
+      <div class="concept-item"><strong style="color:var(--red); margin-right:0.5rem;">[ERROR]</strong> Something broke — API error, connection drop, etc. Usually self-recovers. If persistent, check Railway logs.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">Daily check routine (2 minutes)</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><p>Open Railway → your project → Deploy Logs. Scan for any <strong style="color:var(--orange);">WARN</strong> or <strong style="color:var(--red);">ERROR</strong> lines.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><p>For every ⚠️ HUMAN REVIEW NEEDED — find that contact in WhatsApp and reply personally.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><p>Spot-check 2–3 recent replies. If any sound off, note the pattern and add a rule to persona.txt.</p></div>
+      </div>
+    </div>
+
+    <div class="alert tip" style="margin-top:1.5rem;">
+      <span class="alert-icon">💡</span>
+      <div class="alert-body">
+        <strong>Improve from what you find in logs</strong>
+        The log is your best training data. When you see a reply that missed the mark — read the original message and the bot's reply. Think: "What rule would have fixed this?" Write that rule into persona.txt. Your bot improves every time you do this.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: DEPLOYING UPDATES -->
+  <div class="section" id="deploying">
+    <div class="section-header">
+      <span class="section-badge green">DEPLOYING</span>
+      <span class="section-time">2 minutes</span>
+    </div>
+    <h2>Pushing Updates to Railway</h2>
+    <p class="section-desc">The 3-command workflow for deploying any change — persona updates, rule changes, or code fixes.</p>
+
+    <div class="alert tip" style="margin-bottom:1.5rem;">
+      <span class="alert-icon">⚡</span>
+      <div class="alert-body">
+        <strong>How updates work</strong>
+        You edit files locally on your PC → push to GitHub → Railway sees the new commit → automatically rebuilds and redeploys. The whole cycle takes about 2 minutes. The bot goes offline briefly during redeploy.
+      </div>
+    </div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">The update workflow</p>
+
+    <div class="code-block">
+      <span class="code-label">terminal — from project folder</span>
+      <span class="hl">git add .</span>                                        <span class="dim"># stage all changed files</span><br/>
+      <span class="hl">git commit -m "describe what you changed"</span>          <span class="dim"># save with a description</span><br/>
+      <span class="hl">git push</span>                                           <span class="dim"># send to GitHub → triggers Railway redeploy</span>
+    </div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; margin-top:1.5rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">What to write in commit messages</p>
+    <div class="persona-block">
+      <div class="persona-block-header">Good commit message examples</div>
+      <div class="persona-block-body">
+        <span class="line-rule">git commit -m "Add money request override rule"</span><br/>
+        <span class="line-rule">git commit -m "Regenerate persona with 5 new chat exports"</span><br/>
+        <span class="line-rule">git commit -m "Fix reply in groups — set to false"</span><br/>
+        <span class="line-rule">git commit -m "Add church contact tone rules"</span><br/>
+        <span class="line-rule">git commit -m "Refresh WhatsApp session after logout"</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">When the WhatsApp session expires</p>
+
+    <p style="font-size:0.95rem; margin-bottom:1rem;">WhatsApp will occasionally log out linked devices. When this happens, Railway logs will show the bot trying to generate a new QR code. Fix it by refreshing the session:</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p>On your PC, delete the old session folder:</p>
+          <div class="code-block"><span class="code-label">terminal</span>rmdir /s /q .wa-session</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p>Run the bot locally to scan a fresh QR:</p>
+          <div class="code-block"><span class="code-label">terminal</span>node index.js</div>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Scan the QR code. Wait for "🤖 Bot is ready!" then press Ctrl+C.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <p>Push the new session to Railway:</p>
+          <div class="code-block"><span class="code-label">terminal</span>git add -f .wa-session<br/>git commit -m "Refresh WhatsApp session"<br/>git push</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: EXPANDING -->
+  <div class="section" id="expanding">
+    <div class="section-header">
+      <span class="section-badge purple">EXPANDING</span>
+      <span class="section-time">Future builds</span>
+    </div>
+    <h2>Future Capabilities to Add</h2>
+    <p class="section-desc">What you can build next to make the bot significantly more powerful.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎙️</div>
+        <h4>Voice Note Transcription</h4>
+        <p>Transcribe incoming voice notes to text using Whisper API, then reply to them. Currently the bot ignores all audio.</p>
+        <span class="card-tag">Medium difficulty</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📸</div>
+        <h4>Image Reading</h4>
+        <p>Use a vision model to describe what's in incoming images so the bot can reply meaningfully to photos.</p>
+        <span class="card-tag">Medium difficulty</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📅</div>
+        <h4>Schedule Awareness</h4>
+        <p>Connect to Google Calendar API so the bot knows your real schedule and can answer "are you free?" accurately.</p>
+        <span class="card-tag">Medium difficulty</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h4>Push Notifications</h4>
+        <p>Email or Telegram alert whenever a ⚠️ HUMAN REVIEW NEEDED flag is triggered — so you never miss urgent messages.</p>
+        <span class="card-tag">Easy</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h4>Persistent Memory</h4>
+        <p>Store key facts about each contact in a database so the bot remembers context across sessions and restarts.</p>
+        <span class="card-tag">Hard</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <h4>Smart Group Replies</h4>
+        <p>Reply in group chats only when tagged or when the message is clearly directed at you — not all group messages.</p>
+        <span class="card-tag">Easy</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">⏰</div>
+        <h4>Scheduled Messages</h4>
+        <p>Send scheduled good morning messages, birthday greetings, or reminders to specific contacts automatically.</p>
+        <span class="card-tag">Medium difficulty</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔇</div>
+        <h4>Do Not Disturb Mode</h4>
+        <p>A command you can send from your own phone to pause the bot temporarily when you're taking over manually.</p>
+        <span class="card-tag">Easy</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">The single best thing you can do right now</p>
+    <div class="alert purple">
+      <span class="alert-icon">🎯</span>
+      <div class="alert-body">
+        <strong>Use the bot for 3 days, then do your first training pass</strong>
+        Run it for 3 days. Read every reply in bot.log. Find the 5 replies that felt most unlike you. For each one, write one specific rule that would have fixed it. Add those 5 rules to persona.txt. Push the update. This single pass will improve the bot more than anything else you can do.
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:1rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">Tags</p>
+    <div class="tags">
+      <span class="tag">persona engineering</span>
+      <span class="tag">override rules</span>
+      <span class="tag">bot training</span>
+      <span class="tag">bot.log</span>
+      <span class="tag">Railway deployment</span>
+      <span class="tag">WhatsApp session</span>
+      <span class="tag">Groq API</span>
+      <span class="tag">git push workflow</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Samuel King · Bot Training & Operations Guide · June 2026</p>
+</footer>
+
+</body>
+</html>
